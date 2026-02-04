@@ -1,0 +1,4 @@
+# Ignore secret key files
+config.yaml
+discord_config.yaml
+token_info.json
