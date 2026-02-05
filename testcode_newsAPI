@@ -1,0 +1,92 @@
+import requests
+from datetime import datetime, timedelta,timezone
+import random
+
+## scrapped due to newsapi limitations
+## scrapped due to newsapi limitations
+## scrapped due to newsapi limitations
+## scrapped due to newsapi limitations
+## scrapped due to newsapi limitations
+## scrapped due to newsapi limitations
+
+
+def get_recent_finance_news(api_key):
+    # 1. Calculate the time 5 hours ago (ISO 8601 format)
+    five_hours_ago = (datetime.now(timezone.utc) - timedelta(hours=5)).strftime('%Y-%m-%d %H:%M:%S')
+    
+    # part to see sources
+    url_sources = "https://newsapi.org/v2/top-headlines/sources"
+    params_sources = {
+        'apiKey': api_key,
+        'category': 'business',
+        'language': 'en',
+        'country': 'us'
+    }
+    
+    response = requests.get(url_sources, params=params_sources)
+    data_sources = response.json()
+
+    # save data as a json file
+    import json
+    with open('newsapi_sources_response.json', 'w', encoding='utf-8') as f:
+        json.dump(data_sources, f, ensure_ascii=False, indent=4)
+
+
+
+    # 2. Define API endpoint and parameters
+    # We use 'category=business' for general finance news
+    url = "https://newsapi.org/v2/top-headlines"
+    params = {
+        'apiKey': api_key,
+        # 'country': 'us',
+        # 'category': 'business',
+        'language': 'en',
+        'pageSize': 100,  # Fetch a larger pool to pick from
+        # 'sources': 'business-insider'
+    }
+
+    try:
+        print(five_hours_ago)
+        response = requests.get(url, params=params)
+        data = response.json()
+
+        # save data as a json file
+        import json
+        with open('newsapi_response.json', 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+
+
+        if data.get('status') != 'ok':
+            print(f"Error: {data.get('message')}")
+            return
+
+        articles = data.get('articles', [])
+        
+        # 3. Filter for articles posted in the last 5 hours
+        # Note: 'publishedAt' is in UTC
+        recent_articles = [
+            a for a in articles 
+            if a['publishedAt'] >= five_hours_ago
+        ]
+
+        if not recent_articles:
+            print("No finance articles found in the last 5 hours.")
+            return
+
+        # 4. Select 10 random articles (or all if fewer than 10)
+        sample_size = min(len(recent_articles), 10)
+        random_selection = random.sample(recent_articles, sample_size)
+
+        print(f"--- Top {sample_size} Random Finance Articles (Last 5 Hours) ---\n")
+        for i, article in enumerate(random_selection, 1):
+            print(f"{i}. {article['title']}")
+            print(f"   Source: {article['source']['name']}")
+            print(f"   Published At: {article['publishedAt']}")
+            print(f"   URL: {article['url']}\n")
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+# Replace 'YOUR_API_KEY' with your actual NewsAPI key
+YOUR_API_KEY = "3dd8745a176c4a70ad6d4815ebc64b8b"
+get_recent_finance_news(YOUR_API_KEY)
