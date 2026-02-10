@@ -2,6 +2,9 @@
 # 설정 파일 (API 키 포함)
 config.yaml
 discord_config.yaml
+halionia_discord_config.yaml
+token_info.json
+secret.py
 
 # 환경 변수
 .env
@@ -70,6 +73,10 @@ data/
 cache/
 
 # ===== 기타 =====
+# 테스트 코드
+testcode_finnhub.py
+testcode_openai1.py
+
 # 테스트 출력
 test_output/
 tmp/
