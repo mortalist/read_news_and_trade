@@ -1,8 +1,83 @@
-# Ignore secret key files
+# ===== 보안 관련 =====
+# 설정 파일 (API 키 포함)
 config.yaml
 discord_config.yaml
+halionia_discord_config.yaml
 token_info.json
+secret.py
+
+# 환경 변수
+.env
+.env.local
+
+# ===== Python 관련 =====
+# 바이트 컴파일 파일
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# ===== IDE / 에디터 =====
+# VS Code
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# ===== OS 관련 =====
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# ===== 로그 및 데이터 =====
+*.log
+logs/
+data/
+cache/
+
+# ===== 기타 =====
+# 테스트 코드
 testcode_finnhub.py
 testcode_openai1.py
-secret.py
-halionia_discord_config.yaml
+
+# 테스트 출력
+test_output/
+tmp/
+temp/
