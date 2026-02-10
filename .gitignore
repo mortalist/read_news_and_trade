@@ -4,3 +4,5 @@ discord_config.yaml
 token_info.json
 testcode_finnhub.py
 testcode_openai1.py
+testcode_newsapi.py
+testcode_finnhub.py
