@@ -1,6 +1,11 @@
 import openai
 import requests
 import os
+import feedparser
+import json
+from collections import Counter
+
+
 
 # Set your API key
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -23,8 +28,8 @@ SECTORS = {
 def analyze_article(article_text):
     """Send article text to ChatGPT and get sector sentiment scores."""
     prompt = f"""
-    You are a financial analyst. 
-    Given the following news article, assign a sentiment score (-5 to +5) 
+    You are a financial analyst analyzing the US MARKET. 
+    Given the following news article, assign a sentiment score (-5(negative impact) to +5(positive impact)) 
     for each sector below based on how the article might impact it:
 
     Sectors: {list(SECTORS.keys())}
@@ -40,7 +45,7 @@ def analyze_article(article_text):
         instructions="you are a helpful assistant that analyzes financial news articles.",
         input = prompt
     )
-    print(response)
+    # print(response)
     return response.output_text
 
 def decide_trades(scores):
@@ -51,17 +56,64 @@ def decide_trades(scores):
     return long_etfs, short_etf
 
 # Example usage
-if __name__ == "__main__":
-    # Replace with your scraped article text
-    article_text = "NVIDIA reports record earnings due to AI chip demand..."
-    
-    scores_json = analyze_article(article_text)
-    print("Sector Scores:", scores_json)
+try:
 
-    # Convert JSON string to dict
-    import json
-    scores = json.loads(scores_json)
+    urls = [
+    "https://feeds.bloomberg.com/markets/news.rss",
+    "https://feeds.bloomberg.com/economics/news.rss",
+    "https://feeds.bloomberg.com/industries/news.rss",
+    "https://feeds.bloomberg.com/business/news.rss",
+    "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=100003114", # CNBC Top News
+    "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=10000664", # CNBC Finance
+    "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=10001054", # CNBC Wealth
+    "https://news.google.com/rss/search?q=finance&hl=en-US&gl=US&ceid=US%3Aen", # Google News Finance
+    ]
 
-    longs, short = decide_trades(scores)
+    scorechart = {'Technology': 0, 
+              'Semiconductors': 0, 
+              'Financials': 0, 
+              'Healthcare': 0, 
+              'Energy': 0, 
+              'Airlines': 0, 
+              'Consumer Discretionary': 0, 
+              'Consumer Staples': 0, 
+              'Commodities': 0, 
+              'Utilities': 0, 
+              'Real Estate': 0}
+
+    for url in urls:
+        # Parse the feed
+        feed = feedparser.parse(url)
+
+        # Print feed title
+        print(feed.feed.title)
+
+        # Loop through entries
+        for entry in feed.entries[:5]:  # limit to first 10
+            print(entry.title)
+            # print(entry.link)
+            print(entry.published)
+            # print entry.summary if it exists and is not empty 
+            # if 'summary' in entry and entry.summary:
+                # print(entry.summary)
+            print()
+
+            article_text = entry.title + "\n" + entry.published
+            scores_json = analyze_article(article_text)
+            scorechart = dict(Counter(scorechart) + Counter(json.loads(scores_json)))
+
+    #     # Replace with your scraped article text
+    #     article_text = """
+    # Audit investigation finds Superintendent Liggins did not adequately oversee district finances - LEX18
+    # Tue, 10 Feb 2026 05:54:09 GMT
+    # """
+
+    print("Sector Scores:", scorechart)
+
+
+    longs, short = decide_trades(scorechart)
     print("Buy ETFs:", longs)
     print("Short ETF:", short)
+
+except Exception as e:
+    print("Error during analysis:", e)
