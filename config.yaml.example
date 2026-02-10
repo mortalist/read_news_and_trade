@@ -1,0 +1,46 @@
+# ===== 모드 설정 =====
+USE_KIS_API: false  # true: 한투 API 사용, false: 뉴스 분석만
+USE_DISCORD: false  # true: Discord 알림, false: 콘솔만
+
+# ===== 필수 설정 (모든 모드) =====
+# OpenAI API
+OPENAI_API_KEY: "sk-YOUR_API_KEY"
+OPENAI_MODEL: "gpt-4o-mini"
+OPENAI_TEMPERATURE: 0.3
+
+# RSS 피드
+RSS_FEEDS:
+  - "https://feeds.bloomberg.com/markets/news.rss"
+  - "https://feeds.bloomberg.com/economics/news.rss"
+  - "https://feeds.bloomberg.com/industries/news.rss"
+  - "https://feeds.bloomberg.com/business/news.rss"
+  - "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=100003114"
+  - "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=10000664"
+  - "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=10001054"
+  - "https://news.google.com/rss/search?q=finance&hl=en-US&gl=US&ceid=US%3Aen"
+
+# 뉴스 수집 설정
+NEWS_LIMIT_PER_FEED: 5
+
+# AI 분석 설정
+MAX_RETRIES: 3
+RETRY_DELAY: 2
+
+# 거래 신호 설정
+NUM_LONG_POSITIONS: 2
+NUM_SHORT_POSITIONS: 1
+
+# 실행 주기 (초) - RSS 피드는 보통 30분~1시간마다 업데이트되므로 15분 권장
+LOOP_INTERVAL: 900  # 15분 (API 비용 절감 및 RSS 업데이트 주기 고려)
+
+# ===== 선택 설정 (USE_KIS_API: true 시 필수) =====
+# 한국투자증권 API (없으면 주석 처리)
+# APP_KEY: "YOUR_APP_KEY"
+# APP_SECRET: "YOUR_APP_SECRET"
+# CANO: "YOUR_ACCOUNT_NUMBER"
+# ACNT_PRDT_CD: "01"
+# URL_BASE: "https://openapi.koreainvestment.com:9443"
+
+# ===== 선택 설정 (USE_DISCORD: true 시 필수) =====
+# Discord Webhook (없으면 주석 처리)
+# DISCORD_WEBHOOK_URL: "https://discord.com/api/webhooks/YOUR_WEBHOOK_URL"
