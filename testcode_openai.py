@@ -102,12 +102,6 @@ try:
             scores_json = analyze_article(article_text)
             scorechart = dict(Counter(scorechart) + Counter(json.loads(scores_json)))
 
-    #     # Replace with your scraped article text
-    #     article_text = """
-    # Audit investigation finds Superintendent Liggins did not adequately oversee district finances - LEX18
-    # Tue, 10 Feb 2026 05:54:09 GMT
-    # """
-
     print("Sector Scores:", scorechart)
 
 
