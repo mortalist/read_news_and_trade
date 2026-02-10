@@ -4,8 +4,7 @@ import os
 import feedparser
 import json
 from collections import Counter
-
-
+from util import halionia_discord_hook
 
 # Set your API key
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -87,12 +86,15 @@ try:
 
         # Print feed title
         print(feed.feed.title)
+        halionia_discord_hook.halionia_send_message(f"Processing feed: {feed.feed.title}")
 
         # Loop through entries
         for entry in feed.entries[:5]:  # limit to first 10
             print(entry.title)
+            halionia_discord_hook.halionia_send_message(f"Article: {entry.title}")
             # print(entry.link)
             print(entry.published)
+            halionia_discord_hook.halionia_send_message(f"Published on: {entry.published}")
             # print entry.summary if it exists and is not empty 
             # if 'summary' in entry and entry.summary:
                 # print(entry.summary)
@@ -103,11 +105,12 @@ try:
             scorechart = dict(Counter(scorechart) + Counter(json.loads(scores_json)))
 
     print("Sector Scores:", scorechart)
-
+    halionia_discord_hook.halionia_send_message(f"Sector Scores: {scorechart}")
 
     longs, short = decide_trades(scorechart)
     print("Buy ETFs:", longs)
     print("Short ETF:", short)
+    halionia_discord_hook.halionia_send_message(f"추천 etf - Long ETFs: {longs}, Short ETF: {short}")
 
 except Exception as e:
     print("Error during analysis:", e)
