@@ -25,7 +25,12 @@ class RSSFetcher:
 
     def fetch_all_news(self) -> List[Dict]:
         """
-        모든 RSS 피드에서 새 뉴스만 수집 (중복 제거 및 캐싱)
+        모든 RSS 피드에서 새 뉴스만 수집
+
+        중복 정책:
+        - URL 기반: 완전히 동일한 링크는 캐시로 제거 (같은 기사 재수집 방지)
+        - 제목 기반 중복 제거 제거됨: 여러 매체에서 같은 사건을 보도하면 각각 별도로 수집
+          → 군중 심리 시뮬레이션: 동일 뉴스 반복 노출 = 더 많은 투자자 영향
 
         Returns:
             새 뉴스 기사 리스트 [{'title', 'published', 'summary', 'link', 'source'}, ...]
@@ -33,7 +38,6 @@ class RSSFetcher:
         self._clean_cache()
 
         all_articles = []
-        deduplicated_title_set: Set[str] = set()
 
         for feed_url in self.feed_urls:
             try:
@@ -55,14 +59,9 @@ class RSSFetcher:
                     link = entry.get('link', '')
                     title = entry.get('title', 'No title')
 
+                    # URL 기반 중복만 체크 (완전히 동일한 링크)
                     if link in self.cached_article_url_timestamps:
                         continue
-
-                    normalized_title_key = title.lower().strip()[:100]
-                    if normalized_title_key in deduplicated_title_set:
-                        continue
-
-                    deduplicated_title_set.add(normalized_title_key)
 
                     article = {
                         'title': title,
@@ -88,7 +87,7 @@ class RSSFetcher:
                 print(f"❌ RSS 수집 실패 [{feed_url}]: {e}")
                 continue
 
-        print(f"\n📊 총 {len(all_articles)}개 새 기사 수집 (중복 제거 및 캐싱 완료)")
+        print(f"\n📊 총 {len(all_articles)}개 새 기사 수집 (URL 기반 캐싱, 제목 중복 허용)")
         return all_articles
 
     def _clean_cache(self):

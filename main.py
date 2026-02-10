@@ -104,10 +104,10 @@ def send_notification(msg, config, discord_enabled=False):
 # 모듈 초기화
 def initialize_modules(config):
     """
-    RSS Fetcher, News Analyzer, Signal Generator 초기화
+    RSS Fetcher, News Analyzer, Signal Generator, Agent Population 초기화
 
     Returns:
-        (rss_fetcher, news_analyzer, signal_generator) 튜플
+        (rss_fetcher, news_analyzer, signal_generator, agent_population) 튜플
     """
     print("DEBUG: initialize_modules() called")
     print("DEBUG: Importing RSSFetcher...")
@@ -139,15 +139,32 @@ def initialize_modules(config):
         num_short=config.get('NUM_SHORT_POSITIONS', 1)
     )
 
-    return rss_fetcher, news_analyzer, signal_generator
+    # Agent Population (에이전트 시뮬레이션 모드인 경우)
+    agent_population = None
+    if config.get('USE_AGENT_SIMULATION', False):
+        print("DEBUG: Importing AgentPopulation...")
+        from analysis.investor_agent import AgentPopulation
+
+        agent_config = config.get('AGENT_SIMULATION', {})
+        agent_population = AgentPopulation(
+            num_agents=agent_config.get('NUM_AGENTS', 100),
+            informed_ratio=agent_config.get('INFORMED_RATIO', 0.20),
+            biased_ratio=agent_config.get('BIASED_RATIO', 0.50),
+            impulsive_ratio=agent_config.get('IMPULSIVE_RATIO', 0.30),
+            informed_sample_size=agent_config.get('INFORMED_SAMPLE_SIZE', 10),
+            biased_sample_size=agent_config.get('BIASED_SAMPLE_SIZE', 5),
+            impulsive_sample_size=agent_config.get('IMPULSIVE_SAMPLE_SIZE', 2)
+        )
+
+    return rss_fetcher, news_analyzer, signal_generator, agent_population
 
 
 # 파이프라인 실행
-def run_pipeline(rss_fetcher, news_analyzer, signal_generator, config, kis_mode=False):
+def run_pipeline(rss_fetcher, news_analyzer, signal_generator, config, agent_population=None, kis_mode=False):
     """
     전체 파이프라인 실행
     1. RSS 수집
-    2. AI 분석
+    2. AI 분석 (에이전트 기반 or 전통적)
     3. 신호 생성
     4. (TODO) 실제 매매
 
@@ -156,9 +173,11 @@ def run_pipeline(rss_fetcher, news_analyzer, signal_generator, config, kis_mode=
         news_analyzer: NewsAnalyzer 인스턴스
         signal_generator: SignalGenerator 인스턴스
         config: 설정 dict
+        agent_population: AgentPopulation 인스턴스 (선택)
         kis_mode: 한투 API 모드 여부
     """
     discord_enabled = config.get('USE_DISCORD', False)
+    use_agent_simulation = config.get('USE_AGENT_SIMULATION', False)
 
     try:
         # 1. RSS 수집
@@ -171,9 +190,14 @@ def run_pipeline(rss_fetcher, news_analyzer, signal_generator, config, kis_mode=
 
         send_notification(f"✅ RSS 수집 완료 ({len(articles)}개 기사)", config, discord_enabled)
 
-        # 2. AI 분석
-        send_notification("🤖 AI 분석 시작...", config, discord_enabled)
-        scorechart = news_analyzer.analyze_batch(articles)
+        # 2. AI 분석 (에이전트 기반 or 전통적)
+        if use_agent_simulation and agent_population:
+            send_notification("👥 에이전트 기반 군중 심리 분석 시작...", config, discord_enabled)
+            agents = agent_population.get_agents()
+            scorechart = news_analyzer.analyze_with_agents(articles, agents)
+        else:
+            send_notification("🤖 전통적 AI 분석 시작...", config, discord_enabled)
+            scorechart = news_analyzer.analyze_batch(articles)
 
         # 점수 요약
         score_summary = ", ".join([f"{sector}: {score:+d}" for sector, score in sorted(scorechart.items(), key=lambda x: x[1], reverse=True)[:5]])
@@ -242,7 +266,7 @@ def main():
         print("DEBUG: Starting module initialization...")
         send_notification("⚙️ 모듈 초기화 중...", config, discord_enabled)
         print("DEBUG: Calling initialize_modules...")
-        rss_fetcher, news_analyzer, signal_generator = initialize_modules(config)
+        rss_fetcher, news_analyzer, signal_generator, agent_population = initialize_modules(config)
         print("DEBUG: initialize_modules returned successfully")
         send_notification("✅ 모듈 초기화 완료", config, discord_enabled)
     except Exception as e:
@@ -259,7 +283,7 @@ def main():
             send_notification(f"\n{'='*60}\n🔄 반복 #{iteration} 시작\n{'='*60}", config, discord_enabled)
 
             # 파이프라인 실행
-            run_pipeline(rss_fetcher, news_analyzer, signal_generator, config, kis_mode)
+            run_pipeline(rss_fetcher, news_analyzer, signal_generator, config, agent_population, kis_mode)
 
             # 대기
             send_notification(f"\n⏳ {loop_interval}초 대기 중... (Ctrl+C로 종료)", config, discord_enabled)

@@ -184,7 +184,7 @@ Return ONLY valid JSON with ALL 11 sectors:
 
     def analyze_batch(self, articles: List[Dict]) -> Dict[str, int]:
         """
-        여러 기사 배치 분석
+        여러 기사 배치 분석 (전통적 방식: 모든 기사 균등 분석)
 
         Args:
             articles: 기사 리스트 [{'title', 'summary', 'source', 'published', ...}, ...]
@@ -207,5 +207,79 @@ Return ONLY valid JSON with ALL 11 sectors:
 
             # Rate limiting 방지
             time.sleep(1)
+
+        return dict(accumulated_sector_scores)
+
+    def analyze_with_agents(self, articles: List[Dict], agents: List) -> Dict[str, int]:
+        """
+        에이전트 기반 군중 심리 분석
+        각 에이전트가 일부 기사만 읽고 반응하여 실제 시장 참여자들의 행동 시뮬레이션
+
+        Args:
+            articles: 기사 리스트 [{'title', 'summary', 'source', 'published', ...}, ...]
+            agents: InvestorAgent 리스트
+
+        Returns:
+            섹터별 점수 합계 dict (모든 에이전트 반응의 합)
+        """
+        if not articles:
+            return {sector: 0 for sector in SECTORS.keys()}
+
+        print(f"\n👥 에이전트 기반 분석 시작: {len(agents)}명의 투자자 시뮬레이션")
+
+        # 기사별로 한 번씩만 AI 분석 (캐싱)
+        article_analysis_cache = {}
+
+        for article_index, article in enumerate(articles, 1):
+            formatted_article_content = f"Title: {article['title']}\n\nSummary: {article['summary']}"
+            news_source_name = article.get('source', 'Unknown')
+            publication_date = article.get('published', 'Unknown')
+
+            print(f"🤖 기사 분석 중... ({article_index}/{len(articles)}) [{news_source_name}]")
+            print(f"   제목: {article['title'][:80]}...")
+
+            sector_sentiment_scores = self.analyze_article(formatted_article_content, news_source_name, publication_date)
+            article_analysis_cache[article['link']] = sector_sentiment_scores
+
+            # Rate limiting 방지
+            time.sleep(1)
+
+        print(f"\n✅ 기사 분석 완료. 이제 {len(agents)}명의 에이전트 반응 시뮬레이션...")
+
+        # 각 에이전트가 선택한 기사에 대해 반응
+        accumulated_sector_scores = Counter()
+        agent_type_stats = {'informed': 0, 'biased': 0, 'impulsive': 0}
+
+        for agent_index, agent in enumerate(agents, 1):
+            # 에이전트가 읽을 기사 선택
+            selected_articles = agent.select_articles(articles)
+
+            if not selected_articles:
+                continue
+
+            # 선택된 기사들의 점수 합산
+            agent_reaction = Counter()
+            for article in selected_articles:
+                article_link = article['link']
+                if article_link in article_analysis_cache:
+                    base_scores = article_analysis_cache[article_link]
+                    # 에이전트 편향 적용
+                    biased_scores = agent.apply_bias_to_scores(base_scores)
+                    agent_reaction.update(biased_scores)
+
+            # 전체 집계에 추가
+            accumulated_sector_scores.update(agent_reaction)
+
+            # 통계
+            agent_type_stats[agent.agent_type.value] += 1
+
+            # 진행상황 (매 20명마다)
+            if agent_index % 20 == 0 or agent_index == len(agents):
+                print(f"   처리 중: {agent_index}/{len(agents)} 에이전트...")
+
+        print(f"\n✅ 에이전트 반응 집계 완료")
+        print(f"   - 정보형: {agent_type_stats['informed']}명")
+        print(f"   - 편향형: {agent_type_stats['biased']}명")
+        print(f"   - 충동형: {agent_type_stats['impulsive']}명")
 
         return dict(accumulated_sector_scores)
