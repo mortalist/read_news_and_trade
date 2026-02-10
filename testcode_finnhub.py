@@ -22,7 +22,7 @@ def get_realtime_finance_news():
 
     # 2. Define the 5-hour threshold
     # Finnhub timestamps are in Unix format (seconds)
-    five_hours_ago = (datetime.now(timezone.utc) - timedelta(hours=5)).timestamp()
+    five_hours_ago = (datetime.now(timezone.utc) - timedelta(hours=10)).timestamp()
 
     # 3. Filter for articles within the last 5 hours
     recent_news = [
