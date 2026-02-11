@@ -91,10 +91,9 @@ try:
         # Loop through entries
         for entry in feed.entries[:5]:  # limit to first 10
             print(entry.title)
-            halionia_discord_hook.halionia_send_message(f"Article: {entry.title}")
             # print(entry.link)
             print(entry.published)
-            halionia_discord_hook.halionia_send_message(f"Published on: {entry.published}")
+            halionia_discord_hook.halionia_send_message(f"Article: {entry.title} - Published on: {entry.published}")
             # print entry.summary if it exists and is not empty 
             # if 'summary' in entry and entry.summary:
                 # print(entry.summary)
