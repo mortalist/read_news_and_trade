@@ -42,7 +42,7 @@ def load_config():
         print("❌ RSS_FEEDS는 비어있지 않은 리스트여야 합니다")
         sys.exit(1)
 
-    supported_openai_models = ['gpt-4o-mini', 'gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo', 'gpt-4']
+    supported_openai_models = ['gpt-5-nano','gpt-4o-mini', 'gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo', 'gpt-4']
     selected_openai_model = configuration_settings.get('OPENAI_MODEL', 'gpt-4o-mini')
     if selected_openai_model not in supported_openai_models:
         print(f"⚠️ 경고: {selected_openai_model}은 유효하지 않을 수 있습니다. 권장 모델: {', '.join(supported_openai_models)}")
@@ -129,6 +129,7 @@ def initialize_modules(config):
         api_key=config['OPENAI_API_KEY'],
         model=config.get('OPENAI_MODEL', 'gpt-4o-mini'),
         temperature=config.get('OPENAI_TEMPERATURE', 0.3),
+        reasoning_effort=config.get('OPENAI_REASONING_EFFORT', {"effort": "medium"}),
         max_retries=config.get('MAX_RETRIES', 3),
         retry_delay=config.get('RETRY_DELAY', 2)
     )
@@ -176,8 +177,8 @@ def run_pipeline(rss_fetcher, news_analyzer, signal_generator, config, kis_mode=
         scorechart = news_analyzer.analyze_batch(articles)
 
         # 점수 요약
-        score_summary = ", ".join([f"{sector}: {score:+d}" for sector, score in sorted(scorechart.items(), key=lambda x: x[1], reverse=True)[:5]])
-        send_notification(f"✅ 분석 완료\n섹터 점수 (상위 5개): {score_summary}", config, discord_enabled)
+        score_summary = ", ".join([f"{sector}: {score:+d}" for sector, score in sorted(scorechart.items(), key=lambda x: x[1], reverse=True)[:11]])
+        send_notification(f"✅ 분석 완료\n섹터 점수: {score_summary}", config, discord_enabled)
 
         # 3. 신호 생성
         send_notification("📊 거래 신호 생성 중...", config, discord_enabled)

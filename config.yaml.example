@@ -6,7 +6,10 @@ USE_DISCORD: false  # true: Discord 알림, false: 콘솔만
 # OpenAI API
 OPENAI_API_KEY: "sk-YOUR_API_KEY"
 OPENAI_MODEL: "gpt-4o-mini"
-OPENAI_TEMPERATURE: 0.3
+OPENAI_TEMPERATURE: 0.3 # speicify between 0 - 1
+OPENAI_REASONING_EFFORT: "low" # Specify none, low, medium, or high 
+
+#temperature 설정은 chatgpt 5부터 reasoning effort로 대체되었습니다.
 
 # RSS 피드
 RSS_FEEDS:

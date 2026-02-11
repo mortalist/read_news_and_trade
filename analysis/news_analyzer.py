@@ -35,6 +35,7 @@ class NewsAnalyzer:
         api_key: str,
         model: str = "gpt-4o-mini",
         temperature: float = 0.3,
+        reasoning_effort: dict = {"effort": "low"},
         max_retries: int = 3,
         retry_delay: int = 2
     ):
@@ -49,6 +50,7 @@ class NewsAnalyzer:
         self.client = OpenAI(api_key=api_key)
         self.model = model
         self.temperature = temperature
+        self.reasoning_effort = reasoning_effort
         self.max_retries = max_retries
         self.retry_delay = retry_delay
         self.SECTORS = SECTORS
@@ -119,17 +121,26 @@ Return ONLY valid JSON with ALL 11 sectors:
 
         for attempt in range(self.max_retries):
             try:
-                response = self.client.chat.completions.create(
-                    model=self.model,
-                    messages=[
-                        {"role": "system", "content": "You are a financial analyst."},
-                        {"role": "user", "content": prompt}
-                    ],
-                    temperature=self.temperature,
-                    response_format={"type": "json_object"}
-                )
+                
+                # if used model is gpt-4 or gpt-3 series it will use temperature parameter
+                # else it will use reasoning_effort parameter
 
-                api_response_content = response.choices[0].message.content
+                if self.model.startswith("gpt-4") or self.model.startswith("gpt-3"):
+                    response = self.client.responses.create(
+                        model=self.model,
+                        instructions="you are a helpful assistant that analyzes financial news articles.",
+                        input=prompt,
+                        temperature=self.temperature,
+                        )
+                else:
+                    response = self.client.responses.create(
+                        model=self.model,
+                        instructions="you are a helpful assistant that analyzes financial news articles.",
+                        input=prompt,
+                        reasoning=self.reasoning_effort,
+                    )
+
+                api_response_content = response.output_text
                 sector_sentiment_scores = json.loads(api_response_content)
 
                 # 모든 섹터가 포함되어 있는지 확인 및 기본값 설정
