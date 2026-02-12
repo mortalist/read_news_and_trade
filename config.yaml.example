@@ -1,6 +1,7 @@
 # ===== 모드 설정 =====
 USE_KIS_API: false  # true: 한투 API 사용, false: 뉴스 분석만
 USE_DISCORD: false  # true: Discord 알림, false: 콘솔만
+USE_AGENT_SIMULATION: true  # true: 에이전트 기반 군중 심리 분석, false: 전통적 배치 분석
 
 # ===== 필수 설정 (모든 모드) =====
 # OpenAI API
@@ -32,6 +33,21 @@ RETRY_DELAY: 2
 # 거래 신호 설정
 NUM_LONG_POSITIONS: 2
 NUM_SHORT_POSITIONS: 1
+
+# ===== 에이전트 시뮬레이션 설정 (USE_AGENT_SIMULATION: true 시 사용) =====
+# 군중 심리 시뮬레이션: 다양한 투자자 유형의 행동을 모델링
+AGENT_SIMULATION:
+  NUM_AGENTS: 100  # 시뮬레이션할 투자자 수 (많을수록 정확하지만 느림)
+
+  # 투자자 유형별 비율 (합계 1.0)
+  INFORMED_RATIO: 0.20    # 정보형: 많은 기사를 종합적으로 분석
+  BIASED_RATIO: 0.50      # 편향형: 특정 섹터만 집중
+  IMPULSIVE_RATIO: 0.30   # 충동형: 헤드라인 몇 개만 보고 과잉반응
+
+  # 각 유형별 읽는 기사 수
+  INFORMED_SAMPLE_SIZE: 10   # 정보형이 읽는 기사 수
+  BIASED_SAMPLE_SIZE: 5      # 편향형이 읽는 기사 수
+  IMPULSIVE_SAMPLE_SIZE: 2   # 충동형이 읽는 기사 수
 
 # 실행 주기 (초) - RSS 피드는 보통 30분~1시간마다 업데이트되므로 15분 권장
 LOOP_INTERVAL: 900  # 15분 (API 비용 절감 및 RSS 업데이트 주기 고려)
