@@ -1,0 +1,52 @@
+import requests
+import yfinance as yf
+import pandas as pd
+from analysis import f_score_analyzer, fs_score_analyzer
+from io import StringIO
+
+url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
+headers = {"User-Agent": "Mozilla/5.0"}
+
+# 1. Fetch the data
+response = requests.get(url, headers=headers)
+
+# 2. Use StringIO to wrap the raw text (this prevents the "raw html" issue)
+html_data = StringIO(response.text)
+
+# 3. Read the table
+# The [0] is crucial because read_html always returns a LIST of tables
+df = pd.read_html(html_data)[0]
+
+# 4. Display the result
+print(df[['Symbol', 'Security']])
+try:
+    for ticker in df['Symbol'].tolist():
+        tickerdict = f_score_analyzer.calculate_f_score(ticker)
+
+        # Print F-Score result
+        # F-Score가 숫자이며, 8 이상인 경우에만 출력
+        if isinstance(tickerdict['f_score'], int) and tickerdict['f_score'] >= 8:  # F-Score가 8 이상인 경우
+            print(f"{ticker} has a high F-Score of {tickerdict['f_score']}.")
+            
+            fs_dict = fs_score_analyzer.calculate_fs_score(ticker, f_score_result=tickerdict)
+            print(f"it has a high FS-Score of {fs_dict['fs_score']}.")
+
+            #returns the return of test ticker for the last month
+            stock = yf.Ticker(ticker)
+            hist = stock.history(period="1mo", interval="1d")
+            
+            # Validate data before processing
+            if hist.empty or len(hist) < 2:
+                print(f"Warning: Not enough data for {ticker}, skipping...")
+                continue
+            
+            if 'Open' not in hist.columns:
+                print(f"Warning: No 'Open' data for {ticker}, skipping...")
+                continue
+            
+            return_pct = ((hist['Open'].iloc[-1]) / (hist['Open'].iloc[0]) - 1) * 100
+            print(f"Last month return for {ticker}: {return_pct:.2f}%")
+
+except Exception as e:
+    print(f"Error processing {ticker}: {e}")
+
