@@ -8,6 +8,17 @@ yfinance를 통해 재무제표 데이터를 가져와 NCAV 비율을 계산합�
 NCAV Ratio = (Current Assets - Total Liabilities) / Current Assets
 
 calculate_ncav_ratio(ticker: str, market: Optional[str] = None) -> Dict:
+result = {
+    'ticker': self.ticker,
+    'ncav_ratio': ncav_ratio,
+    'ncav_ratio_pct': ncav_ratio * 100,
+    'current_assets': current_assets,
+    'total_liabilities': total_liabilities,
+    'net_current_assets': net_current_assets,
+    'analysis_date': datetime.now().strftime('%Y-%m-%d'),
+    'status': status,
+    'interpretation': interpretation
+}
 """
 import os
 import sys
@@ -297,7 +308,7 @@ if __name__ == "__main__":
     print("=" * 80)
 
     # 테스트 종목
-    test_tickers = ['AAPL', 'MSFT', 'GOOGL', 'BRK.B', 'TSLA', 'AMZN', 'JNJ', 'V', 'WMT', 'JPM']
+    test_tickers = ['PLTR', 'MSFT', 'GOOGL', 'BRK.B', 'TSLA', 'AMZN', 'JNJ', 'V', 'WMT', 'JPM']
 
     for ticker in test_tickers:
         print(f"\n{'='*80}")

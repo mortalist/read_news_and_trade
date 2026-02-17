@@ -370,13 +370,13 @@ class PiotroskiFScoreAnalyzer:
 
         # 건전성 판단
         if total_score >= 7:
-            status = "Strong / Healthy"
+            status = "Strong 강함 / Healthy 매우 건전함"
         elif total_score >= 5:
-            status = "Moderate / Fair"
+            status = "Moderate 보통 / Fair 양호"
         elif total_score >= 3:
-            status = "Weak / Caution"
+            status = "Weak 약함 / Caution 주의"
         else:
-            status = "Poor / High Risk"
+            status = "Poor 매우 약함 / High Risk 리스크 높음"
 
         return {
             'ticker': self.ticker,
