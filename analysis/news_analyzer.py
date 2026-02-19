@@ -219,4 +219,60 @@ Return ONLY valid JSON with ALL 11 sectors:
             # Rate limiting 방지
             time.sleep(1)
 
-        return dict(accumulated_sector_scores)
+        #bias 적용
+        dict_acumulated_sector_scores = dict(accumulated_sector_scores)
+        # load bias dict from json file
+        with open('analysis/news_analyzer_bias.json', 'r') as f:
+            bias_dict = json.load(f)
+        # apply bias to accumulated_sector_scores
+        for sector in dict_acumulated_sector_scores:
+                dict_acumulated_sector_scores[sector] *= bias_dict.get(sector, 1.0)
+
+        
+
+        return dict_acumulated_sector_scores
+
+
+if __name__ == "__main__":
+    import os
+    import yaml
+
+    # config.yaml에서 API 키 로드
+    config_path = os.path.join(os.path.dirname(__file__), '..', 'config.yaml')
+    with open(config_path, 'r', encoding='utf-8') as f:
+        config = yaml.safe_load(f)
+
+    api_key = config.get('OPENAI_API_KEY', '')
+    model = config.get('OPENAI_MODEL', 'gpt-4o-mini')
+
+    # 테스트용 샘플 기사
+    test_articles = [
+        {
+            "title": "NVIDIA Reports Record Revenue Driven by AI Chip Demand",
+            "summary": "NVIDIA's quarterly revenue surged 120% year-over-year as demand for AI training and inference chips continues to skyrocket. The company raised its guidance for the next quarter, citing strong orders from major cloud providers.",
+            "source": "Reuters",
+            "published": "2026-02-20"
+        },
+        {
+            "title": "Federal Reserve Signals Potential Rate Cut Amid Slowing Inflation",
+            "summary": "The Federal Reserve indicated it may begin cutting interest rates in the coming months as inflation data shows signs of cooling. Financial markets rallied on the news, with bank stocks and real estate sectors seeing significant gains.",
+            "source": "Bloomberg",
+            "published": "2026-02-19"
+        },
+        {
+            "title": "Oil Prices Drop as OPEC Increases Production Quotas",
+            "summary": "Crude oil prices fell sharply after OPEC announced an increase in production quotas. Energy stocks declined while airline stocks rose on expectations of lower fuel costs.",
+            "source": "CNBC",
+            "published": "2026-02-18"
+        },
+    ]
+
+    analyzer = NewsAnalyzer(api_key=api_key, model=model)
+    results = analyzer.analyze_batch(test_articles)
+
+    print("\n" + "=" * 50)
+    print("섹터별 최종 점수:")
+    print("=" * 50)
+    for sector, score in sorted(results.items(), key=lambda x: x[1], reverse=True):
+        etf = SECTORS[sector]
+        print(f"  {sector:30s}: {score}")

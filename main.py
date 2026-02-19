@@ -55,10 +55,6 @@ def load_config():
         print("❌ NUM_SHORT_POSITIONS는 1 이상이어야 합니다")
         sys.exit(1)
 
-    if configuration_settings.get('NEWS_LIMIT_PER_FEED', 5) < 1:
-        print("❌ NEWS_LIMIT_PER_FEED는 1 이상이어야 합니다")
-        sys.exit(1)
-
     if configuration_settings.get('LOOP_INTERVAL', 900) < 10:
         print("⚠️ 경고: LOOP_INTERVAL이 10초 미만입니다. API 비용이 매우 높아질 수 있습니다.")
 
@@ -121,7 +117,8 @@ def initialize_modules(config):
     # RSS Fetcher
     rss_fetcher = RSSFetcher(
         feed_urls=config['RSS_FEEDS'],
-        limit_per_feed=config.get('NEWS_LIMIT_PER_FEED', 5)
+        min_old_articles=config.get('MIN_OLD_ARTICLES', 2),
+        old_article_threshold_hours=config.get('OLD_ARTICLE_THRESHOLD_HOURS', 20)
     )
 
     # News Analyzer

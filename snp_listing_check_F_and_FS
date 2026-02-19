@@ -20,6 +20,12 @@ df = pd.read_html(html_data)[0]
 # 4. Display the result
 print(df[['Symbol', 'Security']])
 try:
+
+    high_f_score_ticker_counter = 0
+    tota_return_pct = 0
+    final_list = []
+    
+
     for ticker in df['Symbol'].tolist():
         tickerdict = f_score_analyzer.calculate_f_score(ticker)
 
@@ -27,13 +33,14 @@ try:
         # F-Score가 숫자이며, 8 이상인 경우에만 출력
         if isinstance(tickerdict['f_score'], int) and tickerdict['f_score'] >= 8:  # F-Score가 8 이상인 경우
             print(f"{ticker} has a high F-Score of {tickerdict['f_score']}.")
+            high_f_score_ticker_counter += 1
             
             fs_dict = fs_score_analyzer.calculate_fs_score(ticker, f_score_result=tickerdict)
             print(f"it has a high FS-Score of {fs_dict['fs_score']}.")
 
             #returns the return of test ticker for the last month
             stock = yf.Ticker(ticker)
-            hist = stock.history(period="1mo", interval="1d")
+            hist = stock.history(period="1y", interval="1mo")
             
             # Validate data before processing
             if hist.empty or len(hist) < 2:
@@ -45,7 +52,21 @@ try:
                 continue
             
             return_pct = ((hist['Open'].iloc[-1]) / (hist['Open'].iloc[0]) - 1) * 100
-            print(f"Last month return for {ticker}: {return_pct:.2f}%")
+            print(f"Last year return for {ticker}: {return_pct:.2f}%")
+            tota_return_pct += return_pct
+
+
+            if return_pct > 10:
+                final_list.append((ticker, tickerdict['f_score'], fs_dict['fs_score'], return_pct))
+
+    print(f"\nTotal number of tickers with high F-Score: {high_f_score_ticker_counter}")
+    if high_f_score_ticker_counter > 0:
+        average_return_pct = tota_return_pct / high_f_score_ticker_counter
+        print(f"Average return for tickers with high F-Score: {average_return_pct:.2f}%")
+        
+    print("\nFinal list of tickers with high F-Score, FS-Score, and >10% return in the last year:")
+    for ticker, f_score, fs_score, return_pct in final_list:
+        print(f"{ticker}: F-Score={f_score}, FS-Score={fs_score}, Last Year Return={return_pct:.2f}%")
 
 except Exception as e:
     print(f"Error processing {ticker}: {e}")

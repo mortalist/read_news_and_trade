@@ -106,6 +106,8 @@ LOOP_INTERVAL: 60  # 60초 (1분)마다 실행
 config.yaml:
 ```yaml
 NEWS_LIMIT_PER_FEED: 3  # 피드당 3개만 수집 (기본: 5)
+MIN_OLD_ARTICLES: 2                # stop after finding more than this many old articles
+OLD_ARTICLE_THRESHOLD_HOURS: 20    # what counts as "old" (hours)
 ```
 
 ---
