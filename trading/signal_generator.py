@@ -83,7 +83,7 @@ class SignalGenerator:
             return {
                 'action': 'HOLD',
                 'confidence': 'N/A',
-                'reason': f'유의미한 신호 없음 (Long 임계값: {self.long_threshold:+d}, Short 임계값: {self.short_threshold:+d})',
+                'reason': f'유의미한 신호 없음 (Long 임계값: {self.long_threshold}, Short 임계값: {self.short_threshold})',
                 'long_etfs': [],
                 'long_sectors': [],
                 'long_scores': [],
@@ -186,18 +186,45 @@ class SignalGenerator:
         if signals['long_etfs']:
             formatted_message += "📈 LONG 포지션:\n"
             for etf_ticker, sector_name, sector_score in zip(signals['long_etfs'], signals['long_sectors'], signals['long_scores']):
-                formatted_message += f"  • {etf_ticker} ({sector_name}): {sector_score:+d}점\n"
+                formatted_message += f"  • {etf_ticker} ({sector_name}): {sector_score}점\n"
         else:
             formatted_message += "📈 LONG 포지션: 없음\n"
 
         formatted_message += f"\n📉 SHORT 포지션:\n"
         if signals['short_etf']:
-            formatted_message += f"  • {signals['short_etf']} ({signals['short_sector']}): {signals['short_score']:+d}점\n"
+            formatted_message += f"  • {signals['short_etf']} ({signals['short_sector']}): {signals['short_score']}점\n"
         else:
             formatted_message += "  • 없음\n"
 
         formatted_message += f"\n📊 섹터 점수 (상위 5개):\n"
         for sector_name, sector_score in signals['all_scores'][:5]:
-            formatted_message += f"  • {sector_name}: {sector_score:+d}점\n"
+            formatted_message += f"  • {sector_name}: {sector_score}점\n"
 
         return formatted_message
+
+
+if __name__ == "__main__":
+    sample_scores = {
+        "Technology": 25.1,
+        "Semiconductors": 18,
+        "Financials": 3,
+        "Healthcare": -2,
+        "Energy": -15,
+        "Airlines": -8,
+        "Consumer Discretionary": 7,
+        "Consumer Staples": 1,
+        "Commodities": -3,
+        "Utilities": 0,
+        "Real Estate": -6.3
+    }
+
+    generator = SignalGenerator()
+    signals = generator.generate_signals(sample_scores)
+
+    print(generator.format_signal_message(signals))
+
+    print("\n--- Raw Signal Data ---")
+    for key, value in signals.items():
+        if key != "all_scores":
+            print(f"  {key}: {value}")
+

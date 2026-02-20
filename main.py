@@ -13,6 +13,8 @@ import time
 import yaml
 import traceback
 from datetime import datetime
+
+from util import halionia_discord_hook
 print("DEBUG: Imports successful")
 
 # 설정 파일 로드 및 검증
@@ -93,6 +95,11 @@ def send_notification(msg, config, discord_enabled=False):
             now = datetime.now()
             message = {"content": f"[{now.strftime('%Y-%m-%d %H:%M:%S')}] {str(msg)}"}
             requests.post(config['DISCORD_WEBHOOK_URL'], data=message)
+
+            #halionia discord webhook 사용
+            import util.halionia_discord_hook
+            halionia_discord_hook.halionia_send_wo_t_message(msg)
+
         except Exception as e:
             print(f"⚠️ Discord 전송 실패: {e}")
 
@@ -174,7 +181,7 @@ def run_pipeline(rss_fetcher, news_analyzer, signal_generator, config, kis_mode=
         scorechart = news_analyzer.analyze_batch(articles)
 
         # 점수 요약
-        score_summary = ", ".join([f"{sector}: {score:+d}" for sector, score in sorted(scorechart.items(), key=lambda x: x[1], reverse=True)[:11]])
+        score_summary = ", ".join([f"{sector}: {score}" for sector, score in sorted(scorechart.items(), key=lambda x: x[1], reverse=True)[:11]])
         send_notification(f"✅ 분석 완료\n섹터 점수: {score_summary}", config, discord_enabled)
 
         # 3. 신호 생성
@@ -259,7 +266,10 @@ def main():
             # 파이프라인 실행
             run_pipeline(rss_fetcher, news_analyzer, signal_generator, config, kis_mode)
 
-            # 대기
+            # 현재는 iteration 없이 종료
+            exit()
+
+            # 대기 - 미구현
             send_notification(f"\n⏳ {loop_interval}초 대기 중... (Ctrl+C로 종료)", config, discord_enabled)
             time.sleep(loop_interval)
 

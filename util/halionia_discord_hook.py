@@ -15,3 +15,10 @@ def halionia_send_message(msg):
     message = {"content": f"[{now.strftime('%Y-%m-%d %H:%M:%S')}] {str(msg)}"}
     requests.post(DISCORD_WEBHOOK_URL, data=message)
     print(message)
+
+def halionia_send_wo_t_message(msg):
+    """디스코드 메세지 전송"""
+    now = datetime.datetime.now()
+    message = {"content": f"{str(msg)}"}
+    requests.post(DISCORD_WEBHOOK_URL, data=message)
+    print(message)

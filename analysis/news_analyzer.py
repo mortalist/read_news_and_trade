@@ -3,6 +3,7 @@ AI 뉴스 분석 모듈
 OpenAI API를 사용하여 뉴스 기사의 섹터별 감정 점수 분석
 """
 import json
+import os
 import time
 import sys
 from typing import Dict, List
@@ -222,7 +223,8 @@ Return ONLY valid JSON with ALL 11 sectors:
         #bias 적용
         dict_acumulated_sector_scores = dict(accumulated_sector_scores)
         # load bias dict from json file
-        with open('analysis/news_analyzer_bias.json', 'r') as f:
+        bias_json_path = os.path.join(os.path.dirname(__file__), 'news_analyzer_bias.json')
+        with open(bias_json_path, 'r') as f:
             bias_dict = json.load(f)
         # apply bias to accumulated_sector_scores
         for sector in dict_acumulated_sector_scores:
