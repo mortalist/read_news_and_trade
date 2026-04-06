@@ -420,7 +420,7 @@ if __name__ == "__main__":
     print("=" * 80)
 
     # 테스트 종목
-    test_tickers = ['AAPL', 'MSFT', 'GOOGL',"BRK.B"]
+    test_tickers = ['C', 'MSFT', 'GOOGL',"BRK"]
 
     for ticker in test_tickers:
         print(f"\n{'='*80}")
